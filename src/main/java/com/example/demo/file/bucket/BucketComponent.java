@@ -8,10 +8,13 @@ import com.example.demo.file.hash.FileHashAlgorithm;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
@@ -105,6 +108,13 @@ public class BucketComponent {
                     .getObjectRequest(getObjectRequest)
                     .build());
     return presignedRequest.url();
+  }
+
+  public List<String> list(String prefix) {
+    var request =
+        ListObjectsV2Request.builder().bucket(bucketConf.getBucketName()).prefix(prefix).build();
+    var response = bucketConf.getS3Client().listObjectsV2(request);
+    return response.contents().stream().map(S3Object::key).toList();
   }
 
   public String getBucketName() {
